@@ -11,6 +11,7 @@ module.exports = async function (deployer) {
 		process.env.ICO_PERCENT_BONUS,
 		process.env.PREICO_PERCENT_BONUS,
 		process.env.ICO_CAP,
+		process.env.TOTAL_SUPPLY,
 		process.env.ADMIN_ADDRESS
 	);
 

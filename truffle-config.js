@@ -15,15 +15,28 @@ module.exports = {
 			gasPrice: 10000000000,
 			skipDryRun: true,
 		},
-		aurora: {
+		auroraTestnet: {
 			provider: function () {
 				return new HDWalletProvider(
 					[process.env.PRIVATE_KEY],
-					`https://rinkeby.infura.io/v3/${process.env.INFURA_API_KEY}`
+					`https://testnet.aurora.dev/`
 				);
 			},
 			from: process.env.ETH_STORAGE,
-			network_id: 4,
+			network_id: 1313161555,
+			gas: 4500000,
+			gasPrice: 10000000000,
+			skipDryRun: true,
+		},
+		auroraMainnet: {
+			provider: function () {
+				return new HDWalletProvider(
+					[process.env.PRIVATE_KEY],
+					`https://mainnet.aurora.dev`
+				);
+			},
+			from: process.env.ETH_STORAGE,
+			network_id: 1313161554,
 			gas: 4500000,
 			gasPrice: 10000000000,
 			skipDryRun: true,

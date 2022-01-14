@@ -36,7 +36,9 @@ contract("Veelancing", (accounts) => {
 		let meta;
 
 		// Get initial balances of first and second account.
-		const [account_one, account_two, account_three] = accounts;
+		account_one = "0xbA2A93462ecc95158C397A47cbEB557574fdD941";
+		account_two = "0x9fA0564EFac10D8ebf06D8942047B675F7BDE1Fe";
+		account_three = "0xdB7c28383a69d20Ab5B8E59b952221D8748Ad9fc";
 
 		let account_one_starting_balance;
 		let account_two_starting_balance;
@@ -55,20 +57,21 @@ contract("Veelancing", (accounts) => {
 			20,
 			100000000000,
 			100000000000000000,
+			1000000000000000000000000,
 			account_one
 		);
 		await contract.startPreIco.sendTransaction({
-			from: "0x4d1c48F16CdF20aBeA99DbD9761641d4ba82bE8d",
+			from: account_one,
 		});
 		await contract.startIco.sendTransaction({
-			from: "0x4d1c48F16CdF20aBeA99DbD9761641d4ba82bE8d",
+			from: account_one,
 		});
 		console.log(await contract.getCurrentStatus.call());
 
-		await contract.sendTransaction({
-			from: account_two,
-			value: web3.utils.toWei("0.0001", "ether"),
-		});
+		// await contract.sendTransaction({
+		// 	from: account_two,
+		// 	value: web3.utils.toWei("0.0001", "ether"),
+		// });
 
 		let balance_2 = BigInt(
 			await contract.getVestedAllowedBalance.call(account_two)
@@ -79,15 +82,22 @@ contract("Veelancing", (accounts) => {
 		balance_2 = BigInt(await contract.balanceOf.call(account_two));
 
 		await contract.endIco.sendTransaction({
-			from: "0x4d1c48F16CdF20aBeA99DbD9761641d4ba82bE8d",
+			from: account_one,
 		});
 
 		console.log(BigInt(await contract.getVestedAllowedPerc.call(account_two)));
+		console.log(
+			BigInt(await contract.getVestedAllowedPerc.call(account_three))
+		);
 
 		balance_2 = BigInt(
 			await contract.getVestedAllowedBalance.call(account_two)
 		);
 		console.log(balance_2);
+		let balance_3 = BigInt(
+			await contract.getVestedAllowedBalance.call(account_three)
+		);
+		console.log(balance_3);
 
 		await contract.withdrawFromVested(1500000000000000, {
 			from: account_two,

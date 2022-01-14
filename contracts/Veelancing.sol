@@ -27,6 +27,7 @@ contract VeelancingToken is ERC20, AccessControl {
     uint256[] private teamAmounts;
     uint256 private percTeam;
     uint256 private vestingDaysTeam;
+    uint256 private cap;
 
     enum CrowdState {
         NotStarted,
@@ -57,11 +58,13 @@ contract VeelancingToken is ERC20, AccessControl {
         uint256 percIco_,
         uint256 percPreIco_,
         uint256 icoCap_,
+        uint256 cap_,
         address owner
     ) public ERC20(name, symbol) {
         percIco = percIco_;
         percPreIco = percPreIco_;
         icoCap = icoCap_;
+        cap = cap_;
 
         soldIcoTotal = 0;
 
@@ -70,13 +73,13 @@ contract VeelancingToken is ERC20, AccessControl {
         vestingDays = 90 days;
         vestingPerc = 20;
 
-        team = [0x81cC9eCaD6a8D9367B18Ad892d5f7dD1212010A7];
+        team = [0x9fA0564EFac10D8ebf06D8942047B675F7BDE1Fe];
         teamAmounts = [1000000];
         percTeam = 30;
         vestingDaysTeam = 120 days;
 
-        investors = [0x81cC9eCaD6a8D9367B18Ad892d5f7dD1212010A7];
-        investorAmounts = [10000];
+        investors = [0xdB7c28383a69d20Ab5B8E59b952221D8748Ad9fc];
+        investorAmounts = [1000000];
         percInvestors = 25;
         vestingDaysInvestors = 180 days;
 
@@ -95,15 +98,19 @@ contract VeelancingToken is ERC20, AccessControl {
         }
     }
 
-    function getIcoCap() public returns (uint256) {
+    function cap() public view virtual returns (uint256) {
+        return cap;
+    }
+
+    function getIcoCap() public view returns (uint256) {
         return icoCap;
     }
 
-    function getIcoSold() public returns (uint256) {
+    function getIcoSold() public view returns (uint256) {
         return soldIcoTotal;
     }
 
-    function getCurrentStatus() public returns (string memory) {
+    function getCurrentStatus() public view returns (string memory) {
         if (state == CrowdState.NotStarted) {
             return "NotStarted";
         } else if (state == CrowdState.PreICO) {
@@ -141,6 +148,7 @@ contract VeelancingToken is ERC20, AccessControl {
 
     function getVestedTotalBalance(address to)
         public
+        view
         virtual
         returns (uint256)
     {
@@ -157,6 +165,7 @@ contract VeelancingToken is ERC20, AccessControl {
 
     function getVestedAllowedBalance(address to)
         public
+        view
         virtual
         returns (uint256)
     {
@@ -290,5 +299,12 @@ contract VeelancingToken is ERC20, AccessControl {
         uint256 amount
     ) internal virtual override(ERC20) {
         super._beforeTokenTransfer(from, to, amount);
+
+        if (from == address(0)) {
+            require(
+                totalSupply().add(amount) <= cap(),
+                "Veelancing: Cap exceeded"
+            );
+        }
     }
 }

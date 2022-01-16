@@ -74,7 +74,7 @@ contract VeelancingToken is ERC20, AccessControl {
         vestingPerc = 20;
 
         team = [
-            0xf553ce9e38b21077f518d8db39db892f05751fa1,
+            0xF553CE9e38b21077f518D8dB39dB892f05751FA1,
             0xdA974670f0Fa770db9277A0306d568E4D6f6c5a3,
             0x23922042557AF5B562eab49FD0AC09b16E6Ac5E2,
             0xA0e6f859c24549Efc0f873e7e5c043d90bA68EAb,
@@ -88,40 +88,35 @@ contract VeelancingToken is ERC20, AccessControl {
             0x81a806E845D80bc775D721878d976e6F20dfA115,
             0xBdB1D0e82620bf90a7B231b19c69caD391073341,
             0xAc531927bD88c9A59e757Cb5BB556535c9c3043F,
-            0x2BC800abE1bd22beC07561Bc7405209088977169,
+            0x2BC800abE1bd22beC07561Bc7405209088977169
         ];
         teamAmounts = [
-            20000270, 
-            6000960, 
-            30000300, 
-            7000000, 
-            7000000, 
-            7000000, 
-            3000000, 
-            50000, 
-            7000000, 
-            7000000, 
-            6000000, 
-            7000100, 
-            5100, 
-            1100, 
+            20000270,
+            6000960,
+            30000300,
+            7000000,
+            7000000,
+            7000000,
+            3000000,
+            50000,
+            7000000,
+            7000000,
+            6000000,
+            7000100,
+            5100,
+            1100,
             7000100
         ];
         percTeam = 30;
         vestingDaysTeam = 120 days;
 
         investors = [
-            0xc9c4aAf0042dAa49e404bdB5a84EfcFc17c54880, 
-            0x72321DEc1Bc93D8C906E40d1056522283A4389F9, 
-            0xB2BD39587cf589AAAb6a36e25B0aED76FCf58c7B, 
+            0xc9c4aAf0042dAa49e404bdB5a84EfcFc17c54880,
+            0x72321DEc1Bc93D8C906E40d1056522283A4389F9,
+            0xB2BD39587cf589AAAb6a36e25B0aED76FCf58c7B,
             0x3EfFeC8EbcF00052F62e4001B7804011Da7c6f14
         ];
-        investorAmounts = [
-            40010, 
-            12500000, 
-            38940, 
-            39640
-        ];
+        investorAmounts = [40010, 12500000, 38940, 39640];
         percInvestors = 25;
         vestingDaysInvestors = 180 days;
 
@@ -140,7 +135,7 @@ contract VeelancingToken is ERC20, AccessControl {
         }
     }
 
-    function cap() public view virtual returns (uint256) {
+    function getCap() public view virtual returns (uint256) {
         return cap;
     }
 
@@ -207,7 +202,6 @@ contract VeelancingToken is ERC20, AccessControl {
 
     function getVestedAllowedBalance(address to)
         public
-        view
         virtual
         returns (uint256)
     {
@@ -344,7 +338,7 @@ contract VeelancingToken is ERC20, AccessControl {
 
         if (from == address(0)) {
             require(
-                totalSupply().add(amount) <= cap(),
+                totalSupply().add(amount) <= getCap(),
                 "Veelancing: Cap exceeded"
             );
         }

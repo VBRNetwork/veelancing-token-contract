@@ -11,12 +11,15 @@ contract VeelancingToken is ERC20, AccessControl {
     bytes32 public constant ADMIN_ROLE = keccak256("ADMIN_ROLE");
     bytes32 public constant INVESTOR_ROLE = keccak256("INVESTOR_ROLE");
     bytes32 public constant TEAM_ROLE = keccak256("TEAM_ROLE");
+    bytes32 public constant BONUS_ICO_ROLE = keccak256("BONUS_ICO_ROLE");
     uint256 private percIco;
     uint256 private percPreIco;
     uint256 public constant basePrice = 100 * 10**18;
     uint256 private icoCap;
     uint256 private soldIcoTotal;
     uint256 private endIcoDate;
+    uint256 private cap;
+
     uint256 private vestingPerc;
     uint256 private vestingDays;
     address[] private investors;
@@ -27,13 +30,19 @@ contract VeelancingToken is ERC20, AccessControl {
     uint256[] private teamAmounts;
     uint256 private percTeam;
     uint256 private vestingDaysTeam;
-    uint256 private cap;
+    uint256 private percBonusIco;
+    uint256 private vestingDaysBonusIco;
 
     enum CrowdState {
         NotStarted,
         PreICO,
         ICO,
         Finished
+    }
+
+    enum WalletStatus {
+        Blocked,
+        Unblocked
     }
 
     struct VestedBalance {
@@ -43,11 +52,13 @@ contract VeelancingToken is ERC20, AccessControl {
     }
 
     mapping(address => VestedBalance) private _vestedBalances;
+    mapping(address => WalletStatus) private _blockedWallets;
 
     CrowdState private state;
 
     event WithdrawFromVested(address indexed to, uint256 value);
     event DepositToVested(address indexed to, uint256 value);
+    event WalletStatusChanged(address indexed to, WalletStatus status);
     event Deposit(address indexed to, uint256 value);
 
     constructor(
@@ -120,6 +131,9 @@ contract VeelancingToken is ERC20, AccessControl {
         percInvestors = 25;
         vestingDaysInvestors = 180 days;
 
+        percBonusIco = 20;
+        vestingDaysBonusIco = 240 days;
+
         _setRoleAdmin(ADMIN_ROLE, DEFAULT_ADMIN_ROLE);
         _setupRole(ADMIN_ROLE, owner);
         depositToVested(Liquidity, volume_liquidity);
@@ -168,7 +182,10 @@ contract VeelancingToken is ERC20, AccessControl {
         }
 
         do {
-            if (hasRole(TEAM_ROLE, to)) {
+            if (hasRole(BONUS_ICO_ROLE, to)) {
+                perc = perc.add(percBonusIco);
+                date = date.add(vestingDaysBonusIco);
+            } else if (hasRole(TEAM_ROLE, to)) {
                 perc = perc.add(percTeam);
                 date = date.add(vestingDaysTeam);
             } else if (hasRole(INVESTOR_ROLE, to)) {
@@ -246,6 +263,24 @@ contract VeelancingToken is ERC20, AccessControl {
         emit DepositToVested(recipient, amount);
     }
 
+    function getWalletStatus(address recipient)
+        public
+        view
+        returns (WalletStatus)
+    {
+        return _blockedWallets[recipient];
+    }
+
+    function setWalletStatus(address recipient, WalletStatus status) public {
+        require(
+            hasRole(ADMIN_ROLE, _msgSender()),
+            "Veelancing: Only the admin can change the wallet status"
+        );
+
+        _blockedWallets[recipient] = status;
+        emit WalletStatusChanged(recipient, status);
+    }
+
     function deposit(address recipient, uint256 amount) public virtual {
         uint256 total = amount;
 
@@ -256,6 +291,10 @@ contract VeelancingToken is ERC20, AccessControl {
                 soldIcoTotal.add(total) <= icoCap,
                 "Veelancing: ICO Cap excedeed"
             );
+
+            if (getWalletStatus(recipient) == WalletStatus.Unblocked) {
+                setWalletStatus(recipient, WalletStatus.Blocked);
+            }
 
             soldIcoTotal = soldIcoTotal.add(total);
 
@@ -268,6 +307,10 @@ contract VeelancingToken is ERC20, AccessControl {
                     soldIcoTotal.add(total) <= icoCap,
                     "Veelancing: ICO Cap excedeed"
                 );
+
+                if (getWalletStatus(recipient) == WalletStatus.Unblocked) {
+                    setWalletStatus(recipient, WalletStatus.Blocked);
+                }
 
                 soldIcoTotal = soldIcoTotal.add(total);
             }
@@ -286,6 +329,11 @@ contract VeelancingToken is ERC20, AccessControl {
         if (!hasRole(ADMIN_ROLE, _msgSender())) {
             require(state == CrowdState.Finished, "Veelancing: ICO season");
         }
+
+        require(
+            getWalletStatus(_msgSender()) == WalletStatus.Unblocked,
+            "Veelancing: Wallet is blocked"
+        );
 
         _transfer(_msgSender(), recipient, amount);
         return true;
@@ -321,6 +369,17 @@ contract VeelancingToken is ERC20, AccessControl {
         if (leftTokens > 0) {
             deposit(_msgSender(), leftTokens);
         }
+    }
+
+    function createBonus(address recipient, uint256 amount) public virtual {
+        require(
+            hasRole(ADMIN_ROLE, _msgSender()),
+            "Veelancing: Only the admin can create bonuses"
+        );
+
+        _setupRole(BONUS_ICO_ROLE, recipient);
+        depositToVested(recipient, amount);
+        soldIcoTotal = soldIcoTotal.add(amount);
     }
 
     receive() external payable virtual {

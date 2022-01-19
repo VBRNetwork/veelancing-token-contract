@@ -22,21 +22,16 @@ contract VeelancingToken is ERC20, AccessControl {
 
     uint256 private constant vestingPerc = 20;
     uint256 private constant vestingDays = 90 days;
-    address[] private constant investors = [
+    address[] private investors = [
         0xc9c4aAf0042dAa49e404bdB5a84EfcFc17c54880,
         0x72321DEc1Bc93D8C906E40d1056522283A4389F9,
         0xB2BD39587cf589AAAb6a36e25B0aED76FCf58c7B,
         0x3EfFeC8EbcF00052F62e4001B7804011Da7c6f14
     ];
-    uint256[] private constant investorAmounts = [
-        40010,
-        12500000,
-        38940,
-        39640
-    ];
+    uint256[] private investorAmounts = [40010, 12500000, 38940, 39640];
     uint256 private constant percInvestors = 25;
     uint256 private constant vestingDaysInvestors = 180 days;
-    address[] private constant team = [
+    address[] private team = [
         0xF553CE9e38b21077f518D8dB39dB892f05751FA1,
         0xdA974670f0Fa770db9277A0306d568E4D6f6c5a3,
         0x23922042557AF5B562eab49FD0AC09b16E6Ac5E2,
@@ -53,7 +48,7 @@ contract VeelancingToken is ERC20, AccessControl {
         0xAc531927bD88c9A59e757Cb5BB556535c9c3043F,
         0x2BC800abE1bd22beC07561Bc7405209088977169
     ];
-    uint256[] private constant teamAmounts = [
+    uint256[] private teamAmounts = [
         20000270,
         6000960,
         30000300,

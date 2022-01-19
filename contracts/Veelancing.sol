@@ -20,18 +20,60 @@ contract VeelancingToken is ERC20, AccessControl {
     uint256 private endIcoDate;
     uint256 private cap;
 
-    uint256 private vestingPerc;
-    uint256 private vestingDays;
-    address[] private investors;
-    uint256[] private investorAmounts;
-    uint256 private percInvestors;
-    uint256 private vestingDaysInvestors;
-    address[] private team;
-    uint256[] private teamAmounts;
-    uint256 private percTeam;
-    uint256 private vestingDaysTeam;
-    uint256 private percBonusIco;
-    uint256 private vestingDaysBonusIco;
+    uint256 private constant vestingPerc = 20;
+    uint256 private constant vestingDays = 90 days;
+    address[] private constant investors = [
+        0xc9c4aAf0042dAa49e404bdB5a84EfcFc17c54880,
+        0x72321DEc1Bc93D8C906E40d1056522283A4389F9,
+        0xB2BD39587cf589AAAb6a36e25B0aED76FCf58c7B,
+        0x3EfFeC8EbcF00052F62e4001B7804011Da7c6f14
+    ];
+    uint256[] private constant investorAmounts = [
+        40010,
+        12500000,
+        38940,
+        39640
+    ];
+    uint256 private constant percInvestors = 25;
+    uint256 private constant vestingDaysInvestors = 180 days;
+    address[] private constant team = [
+        0xF553CE9e38b21077f518D8dB39dB892f05751FA1,
+        0xdA974670f0Fa770db9277A0306d568E4D6f6c5a3,
+        0x23922042557AF5B562eab49FD0AC09b16E6Ac5E2,
+        0xA0e6f859c24549Efc0f873e7e5c043d90bA68EAb,
+        0x733ACd147e486cBe9f33257DC6272Ad5292a8E6f,
+        0x700Ff631E391E22F8B7C97051626f98ff4AE2123,
+        0x6C7CCd2c0f29FE4a01f834E98a97e3698C7Ee168,
+        0xb02dbF9e04535cf3f086fE812BF765D9A8ECE5dB,
+        0xa7d4301F1F5F1C5Ac2Dcc2e761b04Fcbe0bA1Fed,
+        0xC9d8fB40f6d0E3e14C36B93e66EC16C9d4F70ed3,
+        0x72e8BBe74a17dfa47533e556189152f174A00ED9,
+        0x81a806E845D80bc775D721878d976e6F20dfA115,
+        0xBdB1D0e82620bf90a7B231b19c69caD391073341,
+        0xAc531927bD88c9A59e757Cb5BB556535c9c3043F,
+        0x2BC800abE1bd22beC07561Bc7405209088977169
+    ];
+    uint256[] private constant teamAmounts = [
+        20000270,
+        6000960,
+        30000300,
+        7000000,
+        7000000,
+        7000000,
+        3000000,
+        50000,
+        7000000,
+        7000000,
+        6000000,
+        7000100,
+        5100,
+        1100,
+        7000100
+    ];
+    uint256 private constant percTeam = 30;
+    uint256 private constant vestingDaysTeam = 120 days;
+    uint256 private constant percBonusIco = 20;
+    uint256 private constant vestingDaysBonusIco = 240 days;
 
     enum CrowdState {
         NotStarted,
@@ -60,6 +102,7 @@ contract VeelancingToken is ERC20, AccessControl {
     event DepositToVested(address indexed to, uint256 value);
     event WalletStatusChanged(address indexed to, WalletStatus status);
     event Deposit(address indexed to, uint256 value);
+    event CapIncreased(uint256 amount);
 
     constructor(
         string memory name,
@@ -81,59 +124,6 @@ contract VeelancingToken is ERC20, AccessControl {
 
         state = CrowdState.NotStarted;
 
-        vestingDays = 90 days;
-        vestingPerc = 20;
-
-        team = [
-            0xF553CE9e38b21077f518D8dB39dB892f05751FA1,
-            0xdA974670f0Fa770db9277A0306d568E4D6f6c5a3,
-            0x23922042557AF5B562eab49FD0AC09b16E6Ac5E2,
-            0xA0e6f859c24549Efc0f873e7e5c043d90bA68EAb,
-            0x733ACd147e486cBe9f33257DC6272Ad5292a8E6f,
-            0x700Ff631E391E22F8B7C97051626f98ff4AE2123,
-            0x6C7CCd2c0f29FE4a01f834E98a97e3698C7Ee168,
-            0xb02dbF9e04535cf3f086fE812BF765D9A8ECE5dB,
-            0xa7d4301F1F5F1C5Ac2Dcc2e761b04Fcbe0bA1Fed,
-            0xC9d8fB40f6d0E3e14C36B93e66EC16C9d4F70ed3,
-            0x72e8BBe74a17dfa47533e556189152f174A00ED9,
-            0x81a806E845D80bc775D721878d976e6F20dfA115,
-            0xBdB1D0e82620bf90a7B231b19c69caD391073341,
-            0xAc531927bD88c9A59e757Cb5BB556535c9c3043F,
-            0x2BC800abE1bd22beC07561Bc7405209088977169
-        ];
-        teamAmounts = [
-            20000270,
-            6000960,
-            30000300,
-            7000000,
-            7000000,
-            7000000,
-            3000000,
-            50000,
-            7000000,
-            7000000,
-            6000000,
-            7000100,
-            5100,
-            1100,
-            7000100
-        ];
-        percTeam = 30;
-        vestingDaysTeam = 120 days;
-
-        investors = [
-            0xc9c4aAf0042dAa49e404bdB5a84EfcFc17c54880,
-            0x72321DEc1Bc93D8C906E40d1056522283A4389F9,
-            0xB2BD39587cf589AAAb6a36e25B0aED76FCf58c7B,
-            0x3EfFeC8EbcF00052F62e4001B7804011Da7c6f14
-        ];
-        investorAmounts = [40010, 12500000, 38940, 39640];
-        percInvestors = 25;
-        vestingDaysInvestors = 180 days;
-
-        percBonusIco = 20;
-        vestingDaysBonusIco = 240 days;
-
         _setRoleAdmin(ADMIN_ROLE, DEFAULT_ADMIN_ROLE);
         _setupRole(ADMIN_ROLE, owner);
         depositToVested(Liquidity, volume_liquidity);
@@ -151,6 +141,15 @@ contract VeelancingToken is ERC20, AccessControl {
 
     function getCap() public view virtual returns (uint256) {
         return cap;
+    }
+
+    function increaseCap(uint256 amount) public virtual {
+        require(
+            hasRole(ADMIN_ROLE, _msgSender()),
+            "Veelancing: Only admin can increase the cap"
+        );
+        cap = cap.add(amount);
+        emit CapIncreased(amount);
     }
 
     function getIcoCap() public view returns (uint256) {
@@ -388,18 +387,19 @@ contract VeelancingToken is ERC20, AccessControl {
         deposit(_msgSender(), tokens);
     }
 
+    function _mint(address account, uint256 amount) internal virtual override {
+        require(
+            totalSupply().add(amount) <= getCap(),
+            "Veelancing: Cap exceeded"
+        );
+        super._mint(account, amount);
+    }
+
     function _beforeTokenTransfer(
         address from,
         address to,
         uint256 amount
     ) internal virtual override(ERC20) {
         super._beforeTokenTransfer(from, to, amount);
-
-        if (from == address(0)) {
-            require(
-                totalSupply().add(amount) <= getCap(),
-                "Veelancing: Cap exceeded"
-            );
-        }
     }
 }

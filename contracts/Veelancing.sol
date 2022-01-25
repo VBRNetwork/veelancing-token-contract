@@ -121,7 +121,7 @@ contract VeelancingToken is ERC20, AccessControl {
 
         _setRoleAdmin(ADMIN_ROLE, DEFAULT_ADMIN_ROLE);
         _setupRole(ADMIN_ROLE, owner);
-        depositToVested(Liquidity, volume_liquidity);
+        _mint(Liquidity, volume_liquidity);
 
         for (uint256 i = 0; i < investors.length; i++) {
             _setupRole(INVESTOR_ROLE, investors[i]);
